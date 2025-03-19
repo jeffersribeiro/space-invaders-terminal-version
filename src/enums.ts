@@ -7,3 +7,10 @@ export enum GAMEPED_MAPPED_KEY {
   ATTACK_02 = 3,
   ATTACK_03 = 1,
 }
+
+export enum OBJECT_TYPE {
+  PLAYER = "player",
+  NPC = "npc",
+  WALL = "wall",
+  ITEM = "item",
+}

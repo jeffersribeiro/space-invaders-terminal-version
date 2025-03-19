@@ -2,23 +2,17 @@ import { CharacterModel } from "@/entities";
 import { Component } from "@/entities/component";
 
 export class HealthBarUIComponent extends Component {
-  private currentHealth: number;
   private maxHealth: number;
 
   constructor(private readonly char: CharacterModel) {
     super("health_bar_ui_component");
 
-    this.currentHealth = this.char.getHeath();
     this.maxHealth = 100;
   }
 
-  public updateHealth(newHealth: number): void {
-    this.currentHealth = newHealth;
-  }
-
   public render(ctx: CanvasRenderingContext2D): void {
-    const healthPercentage = this.currentHealth / this.maxHealth;
-    const barWidth = 50;
+    const healthPercentage = this.char.health / this.maxHealth;
+    const barWidth = 30;
     const currentBarWidth = barWidth * healthPercentage;
     if (this.ctx) {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -42,13 +36,13 @@ export class HealthBarUIComponent extends Component {
       ctx.font = "10px Arial";
       ctx.fillText(
         `${Math.floor(healthPercentage * 100)}%`,
-        this.char.position.x + 30,
+        this.char.position.x + 35,
         this.char.position.y + 15
       );
 
       ctx.drawImage(
         frame,
-        this.char.position.x + 30,
+        this.char.position.x + 35,
         this.char.position.y + 20
       );
     }

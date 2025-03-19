@@ -1,8 +1,8 @@
-import { AnimationModel } from "@/entities";
+import { AnimationModel, CharacterModel } from "@/entities";
 import attackSoldier from "@/assets/sprites/characters/Soldier/Soldier/Soldier-Attack01.png";
 
 export class SoldierAttack1Animation extends AnimationModel {
-  constructor() {
-    super("attack01", attackSoldier, 60, 60, 6);
+  constructor(char: CharacterModel) {
+    super("attack01", attackSoldier, 100, 100, 6, char);
   }
 }

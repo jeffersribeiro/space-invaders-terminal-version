@@ -2,3 +2,5 @@ node_modules
 test.ts
 dist
 .env
+.env
+*example.*

@@ -1,34 +1,103 @@
 import { Point } from "@/interfaces";
-import { GAMEPED_MAPPED_KEY } from "@/enums";
+import { GAMEPED_MAPPED_KEY, OBJECT_TYPE } from "@/enums";
 import { AnimationModel } from "./animation.entity";
 import { Component } from "./component";
 
-export class GenericObject {
+export abstract class GenericObject {
+  id: number;
+  type: OBJECT_TYPE | null = null;
   position: Point = { x: 0, y: 0 };
+  width: number = 100;
+  height: number = 100;
   isPlayer: boolean = false;
   animations: Record<string, AnimationModel> = {};
   components: Component[] = [];
+  weight: number = 60;
+  private attackLoaded = 0;
+  velocityY: number = 0.5;
+  velocityX: number = 0;
   private currentAction: string = "idle";
   private moveSpeed: number = 5;
-  objectInContact: GenericObject | null = null;
-  health: number = 40;
+  collider: Array<GenericObject> = [];
+  health: number = 100;
   mana: number = 100;
 
-  checkProximity(otherObject: GenericObject): boolean {
-    const distance = Math.sqrt(
-      Math.pow(otherObject.position.x - this.position.x, 2) +
-        Math.pow(otherObject.position.y - this.position.y, 2)
-    );
-    return distance < 30;
+  constructor() {
+    this.id =
+      (this.position.x + 0.5) *
+      (this.position.y + 0.1) *
+      this.width *
+      this.height;
   }
 
-  updateContact(objects: GenericObject[]): void {
-    this.objectInContact = null;
+  public boxCollider(objects: GenericObject[]): void {
+    // Clear the collider array each time to track the objects it is currently colliding with
+    this.collider = [];
 
-    for (const otherObject of objects) {
-      if (otherObject !== this && this.checkProximity(otherObject)) {
-        this.objectInContact = otherObject;
-        break;
+    // Iterate over all objects and detect collisions
+    for (const object of objects) {
+      const isItself = this !== object;
+
+      const isPositionXMoreThanOther =
+        this.position.x < object.position.x + object.width;
+      const isPositionXLessThanOther =
+        this.position.x + this.width > object.position.x;
+      const isPositionYMoreThanOther =
+        this.position.y + this.height > object.position.y;
+      const isPositionYLessThanOther =
+        this.position.y < object.position.y + object.height;
+
+      // If a collision is detected, add the object to the collider array
+      if (
+        isItself &&
+        isPositionXMoreThanOther &&
+        isPositionXLessThanOther &&
+        isPositionYMoreThanOther &&
+        isPositionYLessThanOther
+      ) {
+        this.collider.push(object); // Add the object to the collider array
+      }
+    }
+  }
+
+  public rigidBox() {
+    // Iterate through all the objects in the collider array
+    for (const object of this.collider) {
+      const weightDifference = this.weight < object.weight;
+
+      // Handle horizontal collision (left or right)
+      if (
+        this.position.x + this.width > object.position.x &&
+        this.position.x < object.position.x
+      ) {
+        if (weightDifference) {
+          this.position.x = object.position.x - this.width;
+        }
+      } else if (
+        this.position.x < object.position.x + object.width &&
+        this.position.x + this.width > object.position.x + object.width
+      ) {
+        if (weightDifference) {
+          this.position.x = object.position.x + object.width;
+        }
+      }
+
+      // Handle vertical collision (up or down)
+      if (
+        this.position.y + this.height > object.position.y &&
+        this.position.y < object.position.y
+      ) {
+        if (weightDifference) {
+          this.position.y = object.position.y - this.height;
+          this.velocityY = 0; // Stop downward velocity (gravity)
+        }
+      } else if (
+        this.position.y < object.position.y + object.height &&
+        this.position.y + this.height > object.position.y + object.height
+      ) {
+        if (weightDifference) {
+          this.position.y = object.position.y + object.height;
+        }
       }
     }
   }
@@ -54,7 +123,7 @@ export class GenericObject {
   }
 
   private moveUp(): void {
-    this.position.y -= this.moveSpeed;
+    this.position.y -= this.moveSpeed + 10;
   }
 
   private moveDown(): void {
@@ -71,14 +140,28 @@ export class GenericObject {
   }
 
   private attack(attack: string): void {
-    if (this.objectInContact) {
-      const isPlayer = this.objectInContact.isPlayer;
-      if (!isPlayer) {
-        this.objectInContact.setHeath((this.objectInContact.health -= 10));
+    if (this.attackLoaded < 1) {
+      this.attackLoaded += 0.3;
+    } else {
+      this.attackLoaded = 0;
+      if (this.collider.length) {
+        this.collider
+          .filter((c) => c.type === OBJECT_TYPE.NPC)
+          .map((o) => {
+            o.setHeath((o.health -= 1));
+            o.takeDamage();
+          });
       }
-      console.log(this.objectInContact?.health);
+      this.setCurrentAction(attack);
     }
-    this.setCurrentAction(attack);
+  }
+
+  takeDamage(): void {
+    if (this.attackLoaded < 1) {
+      this.setCurrentAction("idle");
+    } else {
+      this.setCurrentAction("hurt");
+    }
   }
 
   private setHeath(health: number) {
@@ -89,10 +172,7 @@ export class GenericObject {
     return this.health;
   }
 
-  move(button: GAMEPED_MAPPED_KEY | undefined): void {
-    if (this.isPlayer) {
-      console.log(this.position);
-    }
+  buttonPressed(button: GAMEPED_MAPPED_KEY | undefined): void {
     if (button) {
       const goTo: Record<GAMEPED_MAPPED_KEY, () => void> = {
         [GAMEPED_MAPPED_KEY.MOVE_RIGHT]: this.moveRight,
@@ -109,6 +189,12 @@ export class GenericObject {
         action.call(this);
       }
     }
+  }
+
+  move(axis: readonly number[]): void {
+    const [axisX, axisY] = axis;
+    this.position.x += axisX * this.moveSpeed;
+    this.position.y += axisY * this.moveSpeed;
   }
 
   getPosition(): Point {
@@ -145,11 +231,26 @@ export class GenericObject {
         (button) => button.pressed
       );
 
+      this.move(gamepad.axes);
+
       if (buttonPressed > 0) {
-        this.move(buttonPressed);
+        this.buttonPressed(buttonPressed);
       } else {
         this.setCurrentAction("idle");
       }
+    }
+  }
+
+  applyGravity(): void {
+    if (this.velocityY < 10) {
+      this.velocityY += 0.5;
+    }
+
+    this.position.y += this.velocityY;
+
+    if (this.position.y > 500) {
+      this.position.y = 500;
+      this.velocityY = 0;
     }
   }
 }

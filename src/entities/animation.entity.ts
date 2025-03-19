@@ -1,3 +1,5 @@
+import { CharacterModel } from "./character.entity";
+
 export class AnimationModel {
   private animation: HTMLImageElement[] = [];
   private currentFrameIndex: number = 0;
@@ -7,7 +9,8 @@ export class AnimationModel {
     private src: string,
     private spriteWidth: number,
     private spriteHeight: number,
-    private numFrames: number
+    numFrames: number,
+    private char: CharacterModel
   ) {
     this.name = name;
     this.load(numFrames);
@@ -17,6 +20,7 @@ export class AnimationModel {
     const frames: HTMLImageElement[] = [];
     const spriteSheet = new Image();
     spriteSheet.src = this.src;
+
     spriteSheet.onload = () => {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
@@ -24,15 +28,20 @@ export class AnimationModel {
       if (ctx) {
         const frameWidth = 100;
         const frameHeight = 100;
+        const imageWidth = 0;
+        const imageHeight = 0;
+
+        const targetWidth = this.char.width;
+        const targetHeight = this.char.height;
 
         for (let i = 0; i < numFrames; i++) {
           const x = i * frameWidth;
           const y = 0;
 
-          canvas.width = frameWidth;
-          canvas.height = frameHeight;
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
 
-          ctx.clearRect(0, 0, frameWidth, frameHeight);
+          ctx.clearRect(0, 0, targetWidth, targetHeight);
 
           ctx.drawImage(
             spriteSheet,
@@ -40,11 +49,15 @@ export class AnimationModel {
             y,
             frameWidth,
             frameHeight,
-            0,
-            0,
-            frameWidth,
-            frameHeight
+            imageWidth,
+            imageHeight,
+            targetWidth,
+            targetHeight
           );
+
+          ctx.strokeStyle = "black";
+          ctx.lineWidth = 1;
+          ctx.strokeRect(0, 0, targetWidth, targetHeight);
 
           const frame = new Image();
           frame.src = canvas.toDataURL();
