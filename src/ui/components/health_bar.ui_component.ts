@@ -36,15 +36,11 @@ export class HealthBarUIComponent extends Component {
       ctx.font = "10px Arial";
       ctx.fillText(
         `${Math.floor(healthPercentage * 100)}%`,
-        this.char.position.x + 35,
-        this.char.position.y + 15
+        this.char.position.x + 0,
+        this.char.position.y - 15
       );
 
-      ctx.drawImage(
-        frame,
-        this.char.position.x + 35,
-        this.char.position.y + 20
-      );
+      ctx.drawImage(frame, this.char.position.x + 0, this.char.position.y - 10);
     }
   }
 }

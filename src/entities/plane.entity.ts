@@ -26,18 +26,20 @@ export class PlaneModel {
   }
 
   render(): void {
-    setInterval(() => {
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      this.objects.forEach((object) => {
-        object.rigidBox();
-        object.applyGravity();
-        object.boxCollider(this.objects);
+    requestAnimationFrame(() => {
+      setInterval(() => {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.objects.forEach((object) => {
+          object.rigidBox();
+          // object.applyGravity();
+          object.boxCollider(this.objects);
 
-        if (object.isPlayer) {
-          object.handleGamepadInput();
-        }
-        object.render(this.ctx, object.position.x, object.position.y);
-      });
-    }, RENDER_TIME_INTERVAL);
+          if (object.isPlayer) {
+            object.handleGamepadInput();
+          }
+          object.render(this.ctx);
+        });
+      }, RENDER_TIME_INTERVAL);
+    });
   }
 }

@@ -1,41 +1,49 @@
+import { Helper } from "@/helper";
 import { Point } from "@/interfaces";
-import { GAMEPED_MAPPED_KEY, OBJECT_TYPE } from "@/enums";
-import { AnimationModel } from "./animation.entity";
+import { DIRECTION, GAMEPED_MAPPED_KEY, OBJECT_TYPE } from "@/enums";
+
 import { Component } from "./component";
 
-export abstract class GenericObject {
-  id: number;
+import { objectsToRender } from "@/states/game.state";
+
+import { AnimationModel } from "./animation.entity";
+import { Attack } from "./attack.entity";
+import { ControllerModel } from "./controller.entity";
+
+export class GenericObject {
+  id: string;
+  attack: Attack | null = null;
   type: OBJECT_TYPE | null = null;
   position: Point = { x: 0, y: 0 };
-  width: number = 100;
-  height: number = 100;
+  width: number = 40;
+  height: number = 40;
   isPlayer: boolean = false;
   animations: Record<string, AnimationModel> = {};
   components: Component[] = [];
   weight: number = 60;
-  private attackLoaded = 0;
+  attackLoaded = 0;
   velocityY: number = 0.5;
   velocityX: number = 0;
-  private currentAction: string = "idle";
-  private moveSpeed: number = 5;
+  currentAction: string = "idle_right";
+  currentDirection: DIRECTION = DIRECTION.DOWN;
+  moveSpeed: number = 10;
   collider: Array<GenericObject> = [];
   health: number = 100;
   mana: number = 100;
 
+  hasGravity: boolean = true;
+
+  private readonly helper: Helper = new Helper();
+
   constructor() {
-    this.id =
-      (this.position.x + 0.5) *
-      (this.position.y + 0.1) *
-      this.width *
-      this.height;
+    this.id = this.helper.generateUUID();
+    objectsToRender.push(this);
   }
 
   public boxCollider(objects: GenericObject[]): void {
-    // Clear the collider array each time to track the objects it is currently colliding with
     this.collider = [];
 
-    // Iterate over all objects and detect collisions
-    for (const object of objects) {
+    objects.forEach((object) => {
       const isItself = this !== object;
 
       const isPositionXMoreThanOther =
@@ -47,7 +55,6 @@ export abstract class GenericObject {
       const isPositionYLessThanOther =
         this.position.y < object.position.y + object.height;
 
-      // If a collision is detected, add the object to the collider array
       if (
         isItself &&
         isPositionXMoreThanOther &&
@@ -55,64 +62,73 @@ export abstract class GenericObject {
         isPositionYMoreThanOther &&
         isPositionYLessThanOther
       ) {
-        this.collider.push(object); // Add the object to the collider array
+        this.collider.push(object);
       }
-    }
+    });
   }
 
   public rigidBox() {
-    // Iterate through all the objects in the collider array
-    for (const object of this.collider) {
+    this.collider.forEach((object) => {
       const weightDifference = this.weight < object.weight;
 
-      // Handle horizontal collision (left or right)
       if (
         this.position.x + this.width > object.position.x &&
         this.position.x < object.position.x
       ) {
-        if (weightDifference) {
+        if (
+          this.position.x + this.width > object.position.x &&
+          weightDifference
+        ) {
           this.position.x = object.position.x - this.width;
         }
       } else if (
         this.position.x < object.position.x + object.width &&
         this.position.x + this.width > object.position.x + object.width
       ) {
-        if (weightDifference) {
+        if (
+          this.position.x < object.position.x + object.width &&
+          weightDifference
+        ) {
           this.position.x = object.position.x + object.width;
         }
       }
 
-      // Handle vertical collision (up or down)
       if (
         this.position.y + this.height > object.position.y &&
         this.position.y < object.position.y
       ) {
-        if (weightDifference) {
+        if (
+          this.position.y + this.height > object.position.y &&
+          weightDifference
+        ) {
           this.position.y = object.position.y - this.height;
-          this.velocityY = 0; // Stop downward velocity (gravity)
+          this.velocityY = 0;
         }
       } else if (
         this.position.y < object.position.y + object.height &&
         this.position.y + this.height > object.position.y + object.height
       ) {
-        if (weightDifference) {
+        if (
+          this.position.y < object.position.y + object.height &&
+          weightDifference
+        ) {
           this.position.y = object.position.y + object.height;
         }
       }
-    }
+    });
   }
 
-  attachAnimations(animations: AnimationModel[]): void {
-    for (const animation of animations) {
+  public attachAnimations(animations: AnimationModel[]): void {
+    animations.forEach((animation) => {
       this.animations[animation.getName()] = animation;
-    }
+    });
   }
 
-  attachComponents(components: Component[]): void {
+  public attachComponents(components: Component[]): void {
     this.components = components;
   }
 
-  getComponents(): Component[] {
+  public getComponents(): Component[] {
     return this.components;
   }
 
@@ -122,41 +138,69 @@ export abstract class GenericObject {
     }
   }
 
-  private moveUp(): void {
-    this.position.y -= this.moveSpeed + 10;
+  public moveUp(): void {
+    this.currentDirection = DIRECTION.UP;
+    this.setCurrentAction("walk_up");
+    this.position.y -= this.moveSpeed;
   }
 
-  private moveDown(): void {
+  public moveDown(): void {
+    this.currentDirection = DIRECTION.DOWN;
+    this.setCurrentAction("walk_down");
     this.position.y += this.moveSpeed;
   }
 
-  private moveLeft(): void {
+  public jump(): void {
+    this.position.y -= 15;
+  }
+
+  public moveLeft(): void {
+    this.currentDirection = DIRECTION.LEFT;
+    this.setCurrentAction("walk_left");
     this.position.x -= this.moveSpeed;
   }
 
-  private moveRight(): void {
-    this.setCurrentAction("walk");
+  public moveRight(): void {
+    this.currentDirection = DIRECTION.RIGHT;
+    this.setCurrentAction("walk_right");
     this.position.x += this.moveSpeed;
   }
 
-  private attack(attack: string): void {
+  makeAttack(action: string): void {
     if (this.attackLoaded < 1) {
       this.attackLoaded += 0.3;
     } else {
-      this.attackLoaded = 0;
-      if (this.collider.length) {
-        this.collider
-          .filter((c) => c.type === OBJECT_TYPE.NPC)
-          .map((o) => {
-            o.setHeath((o.health -= 1));
-            o.takeDamage();
-          });
+      if (this.attack) {
+        this.attack.makeAttack(action);
       }
-      this.setCurrentAction(attack);
     }
+    const animationDirection = `${action}_${this.currentDirection.toLowerCase()}`;
+
+    this.setCurrentAction(animationDirection);
   }
 
-  takeDamage(): void {
+  roll() {
+    const animationDirection = `roll_${this.currentDirection.toLowerCase()}`;
+
+    switch (this.currentDirection) {
+      case DIRECTION.UP:
+        this.position.y -= 10;
+        break;
+      case DIRECTION.DOWN:
+        this.position.y += 10;
+        break;
+      case DIRECTION.LEFT:
+        this.position.x -= 10;
+        break;
+      case DIRECTION.RIGHT:
+        this.position.x += 10;
+        break;
+    }
+
+    this.setCurrentAction(animationDirection);
+  }
+
+  public takeDamage(): void {
     if (this.attackLoaded < 1) {
       this.setCurrentAction("idle");
     } else {
@@ -164,93 +208,110 @@ export abstract class GenericObject {
     }
   }
 
-  private setHeath(health: number) {
-    this.health = health;
+  public setHeath(health: number) {
+    if (this.health > 0) {
+      this.health = health;
+    } else {
+      this.kill();
+    }
   }
 
-  getHeath(): number {
+  public getHeath(): number {
     return this.health;
   }
 
-  buttonPressed(button: GAMEPED_MAPPED_KEY | undefined): void {
-    if (button) {
-      const goTo: Record<GAMEPED_MAPPED_KEY, () => void> = {
-        [GAMEPED_MAPPED_KEY.MOVE_RIGHT]: this.moveRight,
-        [GAMEPED_MAPPED_KEY.MOVE_LEFT]: this.moveLeft,
-        [GAMEPED_MAPPED_KEY.MOVE_UP]: this.moveUp,
-        [GAMEPED_MAPPED_KEY.MOVE_DOWN]: this.moveDown,
-        [GAMEPED_MAPPED_KEY.ATTACK_01]: () => this.attack("attack01"),
-        [GAMEPED_MAPPED_KEY.ATTACK_02]: () => this.attack("attack02"),
-        [GAMEPED_MAPPED_KEY.ATTACK_03]: () => this.attack("attack03"),
-      };
+  attachObject(): void {
+    if (this.collider.length) {
+      const weapon = this.collider.find((o) => o.type === OBJECT_TYPE.WEAPON);
 
-      const action = goTo[button];
-      if (action) {
-        action.call(this);
+      if (weapon) {
+        this.attack = weapon;
       }
     }
   }
 
-  move(axis: readonly number[]): void {
+  kill() {
+    const objectIndex = objectsToRender.findIndex((o) => o.id === this.id);
+
+    if (objectIndex !== -1) {
+      objectsToRender.splice(objectIndex, 1);
+    }
+  }
+
+  public handleButton(button: GAMEPED_MAPPED_KEY): void {
+    const goTo: Record<GAMEPED_MAPPED_KEY, () => void> = {
+      [GAMEPED_MAPPED_KEY.MOVE_RIGHT]: this.moveRight,
+      [GAMEPED_MAPPED_KEY.MOVE_LEFT]: this.moveLeft,
+      [GAMEPED_MAPPED_KEY.MOVE_UP]: this.moveUp,
+      [GAMEPED_MAPPED_KEY.MOVE_DOWN]: this.moveDown,
+      [GAMEPED_MAPPED_KEY.JUMP]: this.jump,
+      [GAMEPED_MAPPED_KEY.ROLL]: () => this.roll(),
+      [GAMEPED_MAPPED_KEY.ATTACK_01]: () => this.makeAttack("base_attack_01"),
+      [GAMEPED_MAPPED_KEY.ATTACK_02]: () => this.makeAttack("base_attack_01"),
+      [GAMEPED_MAPPED_KEY.ATTACH_OBJECT]: this.attachObject,
+    };
+
+    const action = goTo[button];
+    if (action) {
+      action.call(this);
+    }
+  }
+
+  public move(axis: readonly number[]): void {
     const [axisX, axisY] = axis;
     this.position.x += axisX * this.moveSpeed;
     this.position.y += axisY * this.moveSpeed;
   }
 
-  getPosition(): Point {
+  public getPosition(): Point {
     return this.position;
   }
 
-  setPosition(x: number, y: number): void {
+  public setPosition(x: number, y: number): void {
     this.position = { x, y };
   }
 
-  setDefaultAnimation() {
+  public setDefaultAnimation() {
     this.setCurrentAction("idle");
   }
 
-  public render(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-    for (const component of this.components) {
+  public render(ctx: CanvasRenderingContext2D): void {
+    this.components.forEach((component) => {
       component.render(ctx);
-    }
+    });
+
+    const { x, y } = this.getPosition();
 
     const currentAnimation = this.animations[this.currentAction];
-    if (currentAnimation) {
-      const frame = currentAnimation.getAnimation();
-      if (frame) {
-        ctx.drawImage(frame, x, y);
-      }
+
+    currentAnimation.startAnimation(ctx, x, y);
+  }
+
+  public handleGamepadInput(): void {
+    const gamepad = ControllerModel.getController();
+
+    const buttonPressed = gamepad.find((button) => button.pressed);
+
+    if (buttonPressed) {
+      this.handleButton(buttonPressed.value);
+    } else {
+      const animationDirection = `idle_${this.currentDirection.toLowerCase()}`;
+      this.setCurrentAction(animationDirection);
     }
   }
 
-  handleGamepadInput(): void {
-    const gamepad = navigator.getGamepads()[0];
-
-    if (gamepad) {
-      const buttonPressed = gamepad.buttons.findIndex(
-        (button) => button.pressed
-      );
-
-      this.move(gamepad.axes);
-
-      if (buttonPressed > 0) {
-        this.buttonPressed(buttonPressed);
-      } else {
-        this.setCurrentAction("idle");
+  public applyGravity(): void {
+    if (this.hasGravity) {
+      if (this.velocityY < 10) {
+        this.velocityY += 0.5;
       }
-    }
-  }
 
-  applyGravity(): void {
-    if (this.velocityY < 10) {
-      this.velocityY += 0.5;
-    }
+      this.position.y += this.velocityY;
 
-    this.position.y += this.velocityY;
-
-    if (this.position.y > 500) {
-      this.position.y = 500;
-      this.velocityY = 0;
+      if (this.position.y > 500) {
+        this.position.y = 500;
+        this.velocityY = 0;
+      }
     }
   }
 }

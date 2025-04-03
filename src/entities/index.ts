@@ -1,5 +1,5 @@
 export * from "./character.entity";
-export * from "./gamepad.entity";
+export * from "./controller.entity";
 export * from "./generic_object.entity";
 export * from "./plane-point.entity";
 export * from "./plane.entity";

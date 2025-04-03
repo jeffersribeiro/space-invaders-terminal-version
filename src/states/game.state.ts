@@ -1,1 +1,4 @@
-export const is_game_started = false;
+import { GenericObject } from "@/entities";
+
+export const isGameStarted = false;
+export const objectsToRender: GenericObject[] = [];
