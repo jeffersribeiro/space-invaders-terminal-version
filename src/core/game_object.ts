@@ -2,15 +2,15 @@ import { Helper } from "@/helper";
 import { Point } from "@/interfaces";
 import { DIRECTION, GAMEPED_MAPPED_KEY, OBJECT_TYPE } from "@/enums";
 
-import { Component } from "./component";
+import { ComponentModel } from "./component";
 
 import { objectsToRender } from "@/states/game.state";
 
-import { AnimationModel } from "./animation.entity";
-import { Attack } from "./attack.entity";
-import { ControllerModel } from "./controller.entity";
+import { AnimationModel } from "./animation";
+import { Attack } from "./attack";
+import { ControllerModel } from "./controller";
 
-export class GenericObject {
+export abstract class GameObject {
   id: string;
   attack: Attack | null = null;
   type: OBJECT_TYPE | null = null;
@@ -19,17 +19,18 @@ export class GenericObject {
   height: number = 40;
   isPlayer: boolean = false;
   animations: Record<string, AnimationModel> = {};
-  components: Component[] = [];
+  components: ComponentModel[] = [];
   weight: number = 60;
   attackLoaded = 0;
   velocityY: number = 0.5;
   velocityX: number = 0;
   currentAction: string = "idle_right";
   currentDirection: DIRECTION = DIRECTION.DOWN;
-  moveSpeed: number = 10;
-  collider: Array<GenericObject> = [];
+  moveSpeed: number = 0.2;
+  collider: Array<GameObject> = [];
   health: number = 100;
   mana: number = 100;
+  zIndex: number = 0;
 
   hasGravity: boolean = true;
 
@@ -40,7 +41,7 @@ export class GenericObject {
     objectsToRender.push(this);
   }
 
-  public boxCollider(objects: GenericObject[]): void {
+  public boxCollider(objects: GameObject[]): void {
     this.collider = [];
 
     objects.forEach((object) => {
@@ -124,11 +125,11 @@ export class GenericObject {
     });
   }
 
-  public attachComponents(components: Component[]): void {
+  public attachComponents(components: ComponentModel[]): void {
     this.components = components;
   }
 
-  public getComponents(): Component[] {
+  public getComponents(): ComponentModel[] {
     return this.components;
   }
 
@@ -290,14 +291,13 @@ export class GenericObject {
   public handleGamepadInput(): void {
     const gamepad = ControllerModel.getController();
 
-    const buttonPressed = gamepad.find((button) => button.pressed);
-
-    if (buttonPressed) {
-      this.handleButton(buttonPressed.value);
-    } else {
-      const animationDirection = `idle_${this.currentDirection.toLowerCase()}`;
-      this.setCurrentAction(animationDirection);
-    }
+    Object.values(gamepad).forEach((button) => {
+      if (button.pressed) {
+      } else {
+        const animationDirection = `idle_${this.currentDirection.toLowerCase()}`;
+        this.setCurrentAction(animationDirection);
+      }
+    });
   }
 
   public applyGravity(): void {

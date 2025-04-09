@@ -17,7 +17,7 @@ import {
   PlayerRollUpAnimation,
 } from "@/animations/player";
 
-import { CharacterModel } from "@/entities";
+import { CharacterModel } from "@/core";
 import { OBJECT_TYPE } from "@/enums";
 import { HealthBarUIComponent } from "@/ui/components/health_bar.ui_component";
 

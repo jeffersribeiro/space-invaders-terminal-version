@@ -1,5 +1,5 @@
 {
-  "name": "space-invaders-terminal-version",
+  "name": "tiny-sword-game-2d",
   "version": "1.0.0",
   "description": "",
   "main": "dist/main.js",
@@ -14,7 +14,7 @@
   "dependencies": {
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "space-invaders-terminal-version": "file:",
+    "tiny-sword-game-2d": "file:",
     "tsconfig-paths": "^4.2.0"
   },
   "devDependencies": {

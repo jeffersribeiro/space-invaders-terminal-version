@@ -1,3 +1,3 @@
-import worldScene from "./scenes/world.scene";
+import worldScene from "./scenes/world/scene";
 
 worldScene();

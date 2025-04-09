@@ -1,13 +1,13 @@
-import { PlaneModel } from "./plane.entity";
-import { GenericObject } from "./generic_object.entity";
+import { PlaneModel } from "./plane";
+import { GameObject } from "./game_object";
 
 export class SceneModel {
   name: string;
-  objects: GenericObject[];
+  objects: GameObject[];
 
   private readonly plane: PlaneModel;
 
-  constructor(name: string, objects: GenericObject[]) {
+  constructor(name: string, objects: GameObject[]) {
     this.name = name;
     this.objects = objects;
     this.plane = new PlaneModel(name);

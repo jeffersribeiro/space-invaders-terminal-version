@@ -1,4 +1,4 @@
-import { GenericObject } from "./generic_object.entity";
+import { GameObject } from "./game_object";
 
 export class AnimationModel {
   private frames: HTMLImageElement[] = [];
@@ -17,7 +17,7 @@ export class AnimationModel {
     private spriteWidth: number,
     private spriteHeight: number,
     numFrames: number,
-    private char: GenericObject,
+    private char: GameObject,
     private spriteYPosition: number = 0,
     private inverted: boolean = false
   ) {

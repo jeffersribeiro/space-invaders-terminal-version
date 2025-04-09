@@ -1,4 +1,4 @@
-export abstract class Component {
+export abstract class ComponentModel {
   name: string;
   canvas: HTMLCanvasElement = document.createElement(
     "canvas"

@@ -1,12 +1,10 @@
-import { Point } from "@/interfaces";
-import { PlanePoint } from "./plane-point.entity";
-import { GenericObject } from "./generic_object.entity";
+import { GameObject } from "./game_object";
 import { RENDER_TIME_INTERVAL } from "../constants";
 
 export class PlaneModel {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
-  private objects: GenericObject[] = [];
+  private objects: GameObject[] = [];
 
   constructor(canvasId: string) {
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
@@ -17,19 +15,21 @@ export class PlaneModel {
     this.ctx = this.canvas.getContext("2d")!;
   }
 
-  addObjects(objects: GenericObject[]): void {
+  addObjects(objects: GameObject[]): void {
     this.objects = objects;
   }
 
-  getObjects(): GenericObject[] {
+  getObjects(): GameObject[] {
     return this.objects;
   }
 
   render(): void {
-    requestAnimationFrame(() => {
-      setInterval(() => {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.objects.forEach((object) => {
+    setInterval(() => {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+      this.objects
+        .sort((a, b) => a.zIndex - b.zIndex)
+        .forEach((object) => {
           object.rigidBox();
           // object.applyGravity();
           object.boxCollider(this.objects);
@@ -39,7 +39,6 @@ export class PlaneModel {
           }
           object.render(this.ctx);
         });
-      }, RENDER_TIME_INTERVAL);
-    });
+    }, RENDER_TIME_INTERVAL);
   }
 }

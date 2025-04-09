@@ -1,7 +1,7 @@
-import { CharacterModel } from "@/entities";
-import { Component } from "@/entities/component";
+import { CharacterModel } from "@/core";
+import { ComponentModel } from "@/core/component";
 
-export class HealthBarUIComponent extends Component {
+export class HealthBarUIComponent extends ComponentModel {
   private maxHealth: number;
 
   constructor(private readonly char: CharacterModel) {

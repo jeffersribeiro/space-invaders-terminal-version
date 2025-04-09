@@ -1,8 +1,8 @@
 import { OBJECT_TYPE } from "@/enums";
 
-import { GenericObject } from "./generic_object.entity";
+import { GameObject } from "./game_object";
 
-export class Attack extends GenericObject {
+export class Attack extends GameObject {
   attackLoaded: number = 0;
 
   constructor() {

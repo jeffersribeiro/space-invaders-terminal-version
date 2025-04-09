@@ -1,6 +1,6 @@
 import { GAMEPED_MAPPED_KEY } from "@/enums";
 
-enum KeyBoardKeyCode {
+export enum KeyBoardKeyCode {
   KeyW = "KeyW",
   KeyA = "KeyA",
   KeyS = "KeyS",
@@ -9,7 +9,7 @@ enum KeyBoardKeyCode {
   MouseR = "MouseR",
 }
 
-interface GamepadButton {
+export interface GamepadButton {
   value: GAMEPED_MAPPED_KEY;
   pressed: boolean;
   touched: boolean;
@@ -33,7 +33,7 @@ export class ControllerModel {
       2: KeyBoardKeyCode.MouseR,
     };
 
-    const mappedButtons: Record<KeyBoardKeyCode, GamepadButton> = {
+    let mappedButtons: Record<KeyBoardKeyCode, GamepadButton> = {
       KeyW: {
         value: GAMEPED_MAPPED_KEY.MOVE_UP,
         pressed: false,
@@ -45,12 +45,12 @@ export class ControllerModel {
         touched: false,
       },
       KeyS: {
-        value: GAMEPED_MAPPED_KEY.MOVE_RIGHT,
+        value: GAMEPED_MAPPED_KEY.MOVE_DOWN,
         pressed: false,
         touched: false,
       },
       KeyD: {
-        value: GAMEPED_MAPPED_KEY.MOVE_DOWN,
+        value: GAMEPED_MAPPED_KEY.MOVE_RIGHT,
         pressed: false,
         touched: false,
       },
@@ -67,6 +67,7 @@ export class ControllerModel {
     };
 
     window.addEventListener("keydown", (ev) => {
+      console.log("keydown", ev.code);
       if (mappedButtons[ev.code as KeyBoardKeyCode]) {
         mappedButtons[ev.code as KeyBoardKeyCode].pressed = true;
         mappedButtons[ev.code as KeyBoardKeyCode].touched = true;
