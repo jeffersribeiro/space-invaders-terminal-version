@@ -1,13 +1,13 @@
 export enum GAMEPED_MAPPED_KEY {
-  MOVE_UP = 12,
-  MOVE_DOWN = 13,
-  MOVE_LEFT = 14,
-  MOVE_RIGHT = 15,
-  ROLL = 2,
-  ATTACK_02 = 3,
-  ATTACK_01 = 1,
-  JUMP = 0,
-  ATTACH_OBJECT = 7,
+  UP_ARROW = 12,
+  DOWN_ARROW = 13,
+  LEFT_ARROW = 14,
+  RIGHT_ARROW = 15,
+  ACTION_ZERO = 0,
+  ACTION_ONE = 1,
+  ACTION_TWO = 2,
+  ACTION_THREE = 3,
+  ACTIONS_SEVEN = 7,
 }
 
 export enum OBJECT_TYPE {
@@ -18,11 +18,11 @@ export enum OBJECT_TYPE {
   WEAPON = "weapon",
 }
 
-export enum DIRECTION {
-  UP = "up",
-  DOWN = "down",
-  LEFT = "left",
-  RIGHT = "right",
+export enum ORIENTATION {
+  UP = "UP",
+  DOWN = "DOWN",
+  LEFT = "LEFT",
+  RIGHT = "RIGHT",
 }
 
 export enum SPRITE_SIDE {

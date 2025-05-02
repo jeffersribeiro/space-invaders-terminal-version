@@ -1,6 +1,4 @@
-import { GameObject } from "./game_object";
-
-export class AnimationModel {
+export class Animation {
   private frames: HTMLImageElement[] = [];
   private currentFrameIndex: number = 0;
   animationInterval: any = null;
@@ -16,8 +14,9 @@ export class AnimationModel {
     private src: string,
     private spriteWidth: number,
     private spriteHeight: number,
+    private targetWidth: number,
+    private targetHeight: number,
     numFrames: number,
-    private char: GameObject,
     private spriteYPosition: number = 0,
     private inverted: boolean = false
   ) {
@@ -39,8 +38,8 @@ export class AnimationModel {
     const imageWidth = 0;
     const imageHeight = 0;
 
-    const targetWidth = this.char.width;
-    const targetHeight = this.char.height;
+    const targetWidth = this.targetWidth;
+    const targetHeight = this.targetHeight;
 
     this.canvas.width = targetWidth;
     this.canvas.height = targetHeight;

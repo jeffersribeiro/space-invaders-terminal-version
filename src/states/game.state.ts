@@ -1,4 +1,4 @@
-import { GameObject } from "@/core";
+import { Entity } from "@/core";
 
 export const isGameStarted = false;
-export const objectsToRender: GameObject[] = [];
+export const objectsToRender: Entity[] = [];

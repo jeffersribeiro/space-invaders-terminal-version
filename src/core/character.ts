@@ -1,11 +1,11 @@
-import { GameObject } from "./game_object";
+import { Entity } from "./Entity";
 
-export class CharacterModel extends GameObject {
+export class Character extends Entity {
   constructor() {
     super();
   }
 
-  getChar(): CharacterModel {
+  getChar(): Character {
     return this;
   }
 }

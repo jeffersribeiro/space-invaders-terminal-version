@@ -1,13 +1,8 @@
-export abstract class ComponentModel {
-  name: string;
-  canvas: HTMLCanvasElement = document.createElement(
-    "canvas"
-  ) as HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D | null = this.canvas.getContext("2d");
-  constructor(name: string) {
-    this.name = name;
-    this.canvas.setAttribute("id", name);
-  }
+import { Entity } from "./Entity";
 
-  public abstract render(ctx: CanvasRenderingContext2D): void;
+export abstract class Component {
+  entity!: Entity;
+  start?(): void;
+  update?(dt: number): void;
+  onDestroy?(): void;
 }

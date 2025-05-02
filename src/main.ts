@@ -1,3 +1,3 @@
-import worldScene from "./scenes/world/scene";
-
-worldScene();
+import { ControllerModel } from "./core";
+import "./scenes/world/scene";
+ControllerModel.initialize();
